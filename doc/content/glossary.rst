@@ -136,6 +136,13 @@ Expected or ‘keep’ occurrence
 A variant that should be present in the given sample after filtering. These are expected variants in the mock samples.
 
 
+.. _tolerate_glossary:
+
+‘tolerate’ occurrence
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+A variant that could appear in the mock samples but who do not absolutetly have to be kept in the analysis.
+
 .. _OLSP_glossary:
 
 OLSP
