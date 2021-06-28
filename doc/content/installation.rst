@@ -24,6 +24,7 @@ Install Cutadapt, VSEARCH and BLAST in the environment
 
     conda install -c bioconda blast
     conda install -c bioconda vsearch
+    python3 -m pip install --upgrade cutadapt
 
 Install VTAM via pip
 
