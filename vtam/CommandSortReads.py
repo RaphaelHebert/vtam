@@ -22,7 +22,7 @@ from vtam.utils.FileSampleInformation import FileSampleInformation
 
 
 class CommandSortReads(object):
-    """Class for the Merge command"""
+    """Class for the SortReads command"""
 
     @staticmethod
     def main(fastainfo, fastadir, sorteddir, params=None, num_threads=multiprocessing.cpu_count()):
