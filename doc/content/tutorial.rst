@@ -95,8 +95,8 @@ We propose to work in a project directory called *asper1* (the dataset comes fro
 .. code-block:: bash
 
     asper1
-    `-- user_input
-      `-- fastqinfo_mfzr.tsv
+    └-- user_input
+      └-- fastqinfo_mfzr.tsv
     fastq
     |-- mfzr_1_fw.fastq
     |-- mfzr_1_rv.fastq
@@ -118,14 +118,14 @@ This command adds a *merged* directory and a new *fastainfo_mfzr.tsv* file:
     asper1
     |-- run1_mfzr
     |  |-- fastainfo.tsv
-    |  `-- merged
+    |  └-- merged
     |    |-- mfzr_1_fw.fasta
     |    |-- mfzr_2_fw.fasta
-    |    `-- mfzr_3_fw.fasta
+    |    └-- mfzr_3_fw.fasta
     |-- user_input
     |  |-- fastqinfo_mfzr.tsv
     |-- vtam.err
-    `-- vtam.log
+    └-- vtam.log
     fastq
     |-- mfzr_1_fw.fastq
     |-- mfzr_1_rv.fastq
@@ -166,11 +166,11 @@ The FASTA files with the sorted reads are written to the *asper1/sorted* directo
     |-- run1_mfzr
     |  |-- fastainfo.tsv
     |  |-- ...
-    |  `-- sorted
+    |  └-- sorted
     |    |-- mfzr_1_fw_000.fasta
     |    |-- mfzr_1_fw_001.fasta
     |    |-- ...
-    |    `-- sortedinfo.tsv
+    |    └-- sortedinfo.tsv
     |-- ...
     ...
 
@@ -192,6 +192,7 @@ filter: Filter variants and create the ASV table
 The **filter** command is typically first run with default parameters. From the output, users should identify clearly 
 unwanted (‘:ref:`delete <delete_glossary>`’) and clearly necessary (‘:ref:`keep <keep_glossary>`’) 
 occurrences (see :ref:`Reference section <optimize_reference>` for details). 
+The command **makeknownoccurrences** is designed to automate this process.
 These false positive and false negative occurrences will be used as input to the **optimize** command. 
 The **optimize** command will then suggest an optimal parameter combination tailored to your dataset. 
 Then **filter** command should be run again with the optimized parameters.
@@ -237,7 +238,9 @@ Hereafter are the first lines of the *asvtable_default.tsv*
 
 .. note::
     Filter can be run with the **known_occurrences** argument that will add an additional column for each mock sample flagging expected variants. 
-    This helps in creating the **known_occurrences.tsv** input file for the optimization step. For details see the :ref:`Reference section <MakeAsvTable_reference>`
+    This helps in creating the **known_occurrences.tsv** input file for the optimization step. 
+    This is not required to compute the **makeknownoccurrences** command. 
+    For details see the :ref:`Reference section <MakeAsvTable_reference>`
 
 .. _taxassign_tutorial:
 
@@ -252,7 +255,8 @@ A precomputed taxonomy file in TSV format and the BLAST database with COI sequen
 
 .. code-block:: bash
 
-    vtam taxonomy -output vtam_db/taxonomy.tsv --precomputed
+    vtam taxonomy --output vtam_db/taxonomy.tsv --precomputed
+    mkdir vtam_db/coi_blast_db
     vtam coi_blast_db --blastdbdir vtam_db/coi_blast_db
 
 These commands result in these new files:
@@ -268,7 +272,7 @@ These commands result in these new files:
     |  |-- coi_blast_db_20200420.nsd
     |  |-- coi_blast_db_20200420.nsi
     |  └-- coi_blast_db_20200420.nsq
-    `-- taxonomy.tsv
+    └-- taxonomy.tsv
 
 .. note::
     Alternatively, you can use your own custom database or the NCBI nucleotide database :ref:`Reference section <BLAST_database_reference>`
@@ -292,20 +296,89 @@ This results in an additional file:
     |  |-- asvtable_default_taxa.tsv
 
 
+.. _makeknownoccurrences_tutorial:
+
+makeknownoccurrences: Define expected and unexpected occurrences based on mock and negative samples
+-------------------------------------------------------------------------------------------------------
+
+The **makeknownoccurrences** command help the user choose which :ref:`occurrences <occurrence_glossary>` should be :ref:`kept <keep_glossary>` in the results (typically, expected variants of the mock samples) or clearly :ref:`deleted <delete_glossary>` (typically, all occurrences in the negative controls and unexpected occurrences in the mock samples) by generating a default version of the TSV file (:ref:`known_occurrences_mfzr.tsv <known_occurrences_io>`) necessary for the **optimize** command (For details see the :ref:`Reference section <optimize_reference>`).
+
+It also generates a list of the occurrences expected in mock samples but missing from the :ref:`ASVtable_glossary`.
+
+To compute, it requires two additional TSV files :
+
+:download:`sample_types.tsv <../../vtam/data/example/sample_types.tsv>`, which sould have the name, type (mock/negatif/real) and associated habitat for every sample in the ASV table, and should look like this:
+
+.. code-block:: bash
+
+    run sample	sample_type	habitat
+    prerun  Tpos1_prerun	mock	terrestrial
+    prerun  Tpos2_prerun	mock	terrestrial
+    prerun  TnegExt1_prerun	negatif	NA
+    prerun  TnegPCR_prerun	negatif	NA
+    prerun  TnegTag_prerun	negatif	NA
+    prerun  14Ben01	real	freshwater
+    prerun  14Ben02	real	freshwater
+
+    ...
+
+And :download:`mock_composition.tsv <../../vtam/data/example/mock_composition.tsv>`, with all the sequences expected to be amplified from each mock sample, and which sould look like this:
+
+.. code-block:: bash
+
+    marker	run	sample	sequence
+    MFZR	prerun	Tpos1_prerun	ACTATATTTTATTTTTGGGGCTTGATCCGGAATGCTGGGCACCTCTCTAAGCCTTCTAATTCGTGCCGAGCTGGGGCACCCGGGTTCTTTAATTGGCGACGATCAAATTTACAATGTAATCGTCACAGCCCATGCTTTTATTATGATTTTTTTCATGGTTATGCCTATTATAATC
+    MFZR	prerun	Tpos1_prerun	ACTTTATTTTATTTTTGGTGCTTGATCAGGAATAGTAGGAACTTCTTTAAGAATTCTAATTCGAGCTGAATTAGGTCATGCCGGTTCATTAATTGGAGATGATCAAATTTATAATGTAATTGTAACTGCTCATGCTTTTGTAATAATTTTCTTTATAGTTATACCTATTTTAATT
+    MFZR	prerun	Tpos1_prerun	CCTTTATCTTGTATTTGGTGCCTGGGCCGGAATGGTAGGGACCGCCCTAAGCCTTCTTATTCGGGCCGAACTAAGCCAGCCTGGCTCGCTATTAGGTGATAGCCAAATTTATAATGTTATTGTTACCGCCCACGCCTTCGTAATAATTTTCTTTATAGTCATGCCAATTCTCATT
+    MFZR	prerun	Tpos1_prerun	CCTTTATTTTATTTTCGGTATCTGATCAGGTCTCGTAGGATCATCACTTAGATTTATTATTCGAATAGAATTAAGAACTCCTGGTAGATTTATTGGCAACGACCAAATTTATAACGTAATTGTTACATCTCATGCATTTATTATAATTTTTTTTATAGTTATACCAATCATAATT
+    MFZR	prerun	Tpos1_prerun	CTTATATTTTATTTTTGGTGCTTGATCAGGGATAGTGGGAACTTCTTTAAGAATTCTTATTCGAGCTGAACTTGGTCATGCGGGATCTTTAATCGGAGACGATCAAATTTACAATGTAATTGTTACTGCACACGCCTTTGTAATAATTTTTTTTATAGTTATACCTATTTTAATT
+    MFZR	prerun	Tpos1_prerun	TCTATATTTCATTTTTGGTGCTTGGGCAGGTATGGTAGGTACCTCATTAAGACTTTTAATTCGAGCCGAGTTGGGTAACCCGGGTTCATTAATTGGGGACGATCAAATTTATAACGTAATCGTAACTGCTCATGCCTTTATTATGATTTTTTTTATAGTGATACCTATTATAATT
+    MFZR	prerun	Tpos1_prerun	ACTCTATTTAATATTTGCTGCATTTTCAGGGGTTATAGGAACAATATTTTCTATAATTATAAGAATGGAACTTGCTTATCCAGGTGATCAAATATTGAATGGTAATCACCAACTTTATAATGTTATTGTAACTGCTCATGCATTTGTAATGATTTTTTTTATGGTTATGCCTGCCTTGATT
+
+    ...
+    
+.. note::
+
+    It is possible to add extra columns with your notes (for example taxon names) to those files.
+    Extra columns in :ref:`mock_composition_io` will be added to the output file and those in :ref:`sample_types_io` will be ignored by VTAM.
+
+.. note::
+    
+    Adding a column ‘*action*’ to :ref:`mock_composition_io` gives the user the possibility to specify how each sequence should be handled, using the flags :ref:`keep <keep_glossary>`, :ref:`tolerate <tolerate_glossary>` or :ref:`delete <delete_glossary>`.
+    Keep is the default action for all sequences in :ref:`mock_composition_io`.
+    Tolerate is intended to specify occurrences that can appear in the mocks but without the imperative to be kept.
+    Delete can be use to flag known false positive.
+
+Both of those files can be placed in the *asper1/user_input* directory.
+
+.. code-block:: bash
+
+    asper1
+    |-- user_input
+    |  |-- fastqinfo_mfzr.tsv
+    |  |-- mock_composition.tsv
+    |  └-- sample_types.tsv
+
+
+In addition to :ref:`known_occurrences_io`, the command can also generate a file :ref:`missing_occurrences_io` listing any expected occurences missing from the :ref:`asvtable_io`.
+
+The command should be run like this :
+
+.. code-block:: bash
+
+    vtam makeknownoccurrences  --asvtable asper1/run1_mfzr/asvtable_default_taxa.tsv --sample_type asper1/user_input/sample_types.tsv --mock_composition asper1/user_input/mock_composition.tsv' --known_occurrences asper1/run1_mfzr/known_occurrences_mfzr.tsv --missing_occurrences asper1/run1_mfzr/missing_occurrences_mfzr.tsv
+
+
 .. _optimize_tutorial:
 
-optimize: Compute optimal filter parameters based on mock and negative samples
----------------------------------------------------------------------------------------
+optimize: Compute optimal filter parameters
+------------------------------------------------
 
 The **optimize** command helps users choose optimal parameters for filtering that are specifically adjusted to the dataset. 
 This optimization is based on mock samples and negative controls.
 
-Users should prepare a TSV file (*known_occurrences_mfzr.tsv*) with occurrences to be kept in the results
-(typically expected variants of the mock samples) and occurrences to be clearly deleted 
-(typically all occurrences in negative controls, and unexpected occurrences in the mock samples). 
+Users should have prepared a TSV file (*known_occurrences_mfzr.tsv*), preferably using the command **makeknownoccurrences**.
 For details see the :ref:`Reference section <optimize_reference>`.
-
-The example TSV file for the known occurrences of the MFZR marker can be found here : :download:`known_occurrences_mfzr.tsv <../../vtam/data/example/known_occurrences_mfzr.tsv>`.
 
 The first lines of this file look like this:
 
@@ -328,7 +401,7 @@ The **optimize** command is run like this:
 
 .. code-block:: bash
 
-    vtam optimize --db asper1/db.sqlite --sortedinfo asper1/run1_mfzr/sorted/sortedinfo.tsv --sorteddir asper1/run1_mfzr/sorted --known_occurrences asper1/user_input/known_occurrences_mfzr.tsv --outdir asper1/run1_mfzr -v --log asper1/vtam.log
+    vtam optimize --db asper1/db.sqlite --sortedinfo asper1/run1_mfzr/sorted/sortedinfo.tsv --sorteddir asper1/run1_mfzr/sorted --known_occurrences asper1/run1_mfzr/known_occurrences_mfzr.tsv --outdir asper1/run1_mfzr -v --log asper1/vtam.log
 
 .. note::
 
@@ -367,9 +440,9 @@ This command creates four new files:
 
     .. code-block:: bash
 
-        vtam optimize --db asper1/db.sqlite --sortedinfo asper1/run1_mfzr/sorted/sortedinfo.tsv --sorteddir asper1/run1_mfzr/sorted --known_occurrences asper1/user_input/known_occurrences_mfzr.tsv --outdir asper1/run1_mfzr -v --log asper1/vtam.log --until OptimizePCRerror
+        vtam optimize --db asper1/db.sqlite --sortedinfo asper1/run1_mfzr/sorted/sortedinfo.tsv --sorteddir asper1/run1_mfzr/sorted --known_occurrences asper1/run1_mfzr/known_occurrences_mfzr.tsv --outdir asper1/run1_mfzr -v --log asper1/vtam.log --until OptimizePCRerror
 
-        vtam optimize --db asper1/db.sqlite --sortedinfo asper1/run1_mfzr/sorted/sortedinfo.tsv --sorteddir asper1/run1_mfzr/sorted --known_occurrences asper1/user_input/known_occurrences_mfzr.tsv --outdir asper1/run1_mfzr -v --log asper1/vtam.log --until OptimizeLFNsampleReplicate
+        vtam optimize --db asper1/db.sqlite --sortedinfo asper1/run1_mfzr/sorted/sortedinfo.tsv --sorteddir asper1/run1_mfzr/sorted --known_occurrences asper1/run1_mfzr/known_occurrences_mfzr.tsv --outdir asper1/run1_mfzr -v --log asper1/vtam.log --until OptimizeLFNsampleReplicate
 
     Based on the output, create a *params_optimize_mfzr.yml* file that will contain the optimal values suggested for **lfn_sample_replicate_cutoff** and **pcr_error_var_prop**
     
@@ -382,7 +455,7 @@ This command creates four new files:
 
     .. code-block:: bash
 
-        vtam optimize --db asper1/db.sqlite --sortedinfo asper1/run1_mfzr/sorted/sortedinfo.tsv --sorteddir asper1/run1_mfzr/sorted --known_occurrences asper1/user_input/known_occurrences_mfzr.tsv --outdir asper1/run1_mfzr -v --log asper1/vtam.log --until OptimizeLFNreadCountAndLFNvariant --params asper1/user_input/params_optimize_mfzr.yml
+        vtam optimize --db asper1/db.sqlite --sortedinfo asper1/run1_mfzr/sorted/sortedinfo.tsv --sorteddir asper1/run1_mfzr/sorted --known_occurrences asper1/run1_mfzr/known_occurrences_mfzr.tsv --outdir asper1/run1_mfzr -v --log asper1/vtam.log --until OptimizeLFNreadCountAndLFNvariant --params asper1/user_input/params_optimize_mfzr.yml
 
     This step will suggest the following parameter values
 
@@ -446,10 +519,10 @@ We finished our first analysis with VTAM! The resulting directory structure look
     |  |-- optimize_lfn_read_count_and_lfn_variant.tsv
     |  |-- optimize_lfn_variant_specific.tsv
     |  |-- optimize_pcr_error.tsv
-    |  `-- sorted
+    |  └-- sorted
     |    |-- mfzr_1_fw_000.fasta
     |    |-- ...
-    |    `-- sortedinfo.tsv
+    |    └-- sortedinfo.tsv
 
 
 .. _add_new_run-marker_tutorial:
@@ -650,10 +723,10 @@ To end this case, we run the **pool** and **taxassign** commands:
 
     vtam taxassign --db asper2/db.sqlite --asvtable asper2/pooled_asvtable_mfzr_zfzr.tsv --output asper2/pooled_asvtable_mfzr_zfzr_taxa.tsv --taxonomy vtam_db/taxonomy.tsv --blastdbdir vtam_db/coi_blast_db --blastdbname coi_blast_db_20200420 --log asper2/vtam.log -v
 
-.. _snakemake_tutorial:
 
 We finished running VTAM for the two markers!
 
+.. _snakemake_tutorial:
 
 Run VTAM with snakemake
 -------------------------
@@ -677,7 +750,8 @@ To setup the pipeline we need the *fastqinfo_mfzr.tsv* file as before and a conf
     subproject: 'run1_mfzr'
     fastqinfo: 'asper1/user_input/fastqinfo_mfzr.tsv'
     fastqdir: 'fastq'
-    known_occurrences: 'asper1/user_input/known_occurrences_mfzr.tsv'
+    mock_composition: 'asper1/user_input/mock_composition.tsv'
+    sample_types: 'asper1/user_input/sample_types.tsv'
     params: 'asper1/user_input/params_mfzr.yml'
     blastdbdir: 'vtam_db/coi_blast_db'
     blastdbname: 'coi_blast_db_20200420'
@@ -689,18 +763,18 @@ Make sure the :download:`snakemake.yml <../../vtam/data/snakefile.yml>` is in th
 
     .
     |-- asper1
-    |  `-- user_input
+    |  └-- user_input
     |    |-- fastqinfo_mfzr.tsv
-    |    `-- snakeconfig_mfzr.yml
+    |    └-- snakeconfig_mfzr.yml
     |-- fastq
     |  |-- mfzr_1_fw.fastq
     |  |-- ...
     |-- snakefile.yml
-    `-- vtam_db
+    └-- vtam_db
       |-- coi_blast_db
       |  |-- coi_blast_db.nhr
       |  |-- ...
-      `-- taxonomy.tsv
+      └-- taxonomy.tsv
 
 Steps **merge**, **sortreads**, **filter** with default parameters, **taxassign**
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -721,25 +795,27 @@ We find the same directory tree as before:
     |  |-- asvtable.tsv
     |  |-- asvtable_taxa.tsv
     |  |-- fastainfo.tsv
+    |  |-- known_occurrences_mfzr.tsv
     |  |-- merged
     |  |  |-- mfzr_1_fw.fasta
     |  |  |-- ...
-    |  `-- sorted
+    |  └-- sorted
     |    |-- mfzr_1_fw_002.fasta
     |    |-- ...
-    |    `-- sortedinfo.tsv
+    |    └-- sortedinfo.tsv
     |-- user_input
     |  |-- fastqinfo_mfzr.tsv
-    |  |-- known_occurrences_mfzr.tsv
+    |  |-- mock_composition.tsv
     |  |-- params_mfzr.yml
-    |  `-- snakeconfig_mfzr.yml
+    |  |-- sample_types.tsv
+    |  └-- snakeconfig_mfzr.yml
     |-- vtam.err
-    `-- vtam.log
+    └-- vtam.log
 
 The step **optimize**
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-You can now create the *asper1/user_input/known_occurrences_mfzr.tsv* based on the informations given by the *asper1/run1_mfzr/asvtable_default_taxa.tsv*.
+You can now create the *asper1/run1_mfzr/known_occurrences_mfzr.tsv* based on the informations given by the *asper1/run1_mfzr/asvtable_default_taxa.tsv*.
 
 Then you will run the **optimize** script to look for better parameters for the MFZR marker:
 
@@ -788,7 +864,8 @@ The same commands can be run for the second marker ZFZR. You will need the follo
 
 - *asper1/user_input/snakeconfig_zfzr.yml*
 - *asper1/user_input/fastqinfo_zfzr.tsv*
-- *asper1/user_input/known_occurrences_zfzr.tsv*
+- *asper1/user_input/mock_composition.tsv*
+- *asper1/user_input/sample_types.tsv*
 - *asper1/user_input/params_zfzr.yml*
 
 The *snakeconfig_zfzr.yml* will look like this:
@@ -799,7 +876,8 @@ The *snakeconfig_zfzr.yml* will look like this:
     subproject: 'run1_zfzr'
     fastqinfo: 'asper1/user_input/fastqinfo_zfzr.tsv'
     fastqdir: 'fastq'
-    known_occurrences: 'asper1/user_input/known_occurrences_zfzr.tsv'
+    mock_composition: 'asper1/user_input/mock_composition.tsv'
+    sample_types: 'asper1/user_input/sample_types.tsv'
     params: 'asper1/user_input/params_zfzr.yml'
     blastdbdir: 'vtam_db/coi_blast_db'
     blastdbname: 'coi_blast_db_20200420'
@@ -829,7 +907,7 @@ These commands will generate a new folder with the same files for the new marker
     |  |-- merged
     |  |  |-- zfzr_1_fw.fasta
     |  |  |-- ...
-    |  `-- sorted
+    |  └-- sorted
     |    |-- sortedinfo.tsv
     |    |-- zfzr_1_fw_002.fasta
     |    |-- ...
@@ -850,7 +928,8 @@ Similarly as before, we can run all run-markers simultaneously. We will use thes
 
 - *asper2/user_input/snakeconfig.yml*
 - *asper2/user_input/fastqinfo.tsv* (info on both markers)
-- *asper2/user_input/known_occurrences.tsv* (info on both markers)
+- *asper2/user_input/mock_composition.tsv* (info on both markers)
+- *asper2/user_input/sample_types.tsv* (info on both markers)
 - *asper2/user_input/params.yml* (Empty or absent ok)
 
 The *snakeconfig.yml* looks like this:
@@ -862,7 +941,8 @@ The *snakeconfig.yml* looks like this:
     db: 'db.sqlite'
     fastqinfo: 'asper2/user_input/fastqinfo.tsv'
     fastqdir: 'fastq'
-    known_occurrences: 'asper2/user_input/known_occurrences.tsv'
+    mock_composition: 'asper2/user_input/mock_composition.tsv'
+    sample_types: 'asper2/user_input/sample_types.tsv'
     params: 'asper2/user_input/params.yml'
     blastdbdir: 'vtam_db/coi_blast_db'
     blastdbname: 'coi_blast_db_20200420'
@@ -914,23 +994,25 @@ The resulting directory tree looks like this:
     |  |-- asvtable_params_zfzr.tsv
     |  |-- asvtable_taxa.tsv
     |  |-- fastainfo.tsv
+    |  |-- known_occurrences.tsv
     |  |-- merged
     |  |  |-- mfzr_1_fw.fasta
     |  |  |-- ....
-    |  `-- sorted
+    |  └-- sorted
     |    |-- mfzr_1_fw_002.fasta
     |    |-- ...
     |    |-- sortedinfo.tsv
     |    |-- ...
     |-- user_input
     |  |-- fastqinfo.tsv
-    |  |-- known_occurrences.tsv
+    |  |-- mock_composition.tsv
     |  |-- params.yml
     |  |-- params_mfzr.yml
     |  |-- params_zfzr.yml
+    |  |-- sample_types.tsv
     |  |-- snakeconfig.yml
     |  |-- readinfo_mfzr.tsv
-    |  `-- readinfo_zfzr.tsv
+    |  └-- readinfo_zfzr.tsv
 
 The results of the two markers can be pooled as before:
 
