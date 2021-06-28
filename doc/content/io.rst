@@ -88,7 +88,7 @@ Sqlite database containing variants, samples, replicates, read counts, informati
 asvtable
 --------------------------------
 
-Output of :ref:`filter <filter_reference>` or :ref:`pool <pool_reference>`, input of :ref:`taxassign <taxassign_reference>`. 
+Output of :ref:`filter <filter_reference>` or :ref:`pool <pool_reference>`, input of :ref:`taxassign <taxassign_reference>` or :ref:`makeknownoccurrences <makeknownoccurrences_reference>`. 
 TSV file with the variants (in lines) that passed all filtering steps, samples (in columns), presence-absence (output of pool) or read counts (output of filter) in cells and additional columns:
 
     - run: Name of the sequencing run
@@ -105,21 +105,59 @@ TSV file with the variants (in lines) that passed all filtering steps, samples (
     - pooled_sequences (only in output of pool): Sequences of pooled_variants
     - sequence: Sequence of the variant
 
+.. _mock_composition_io:
+
+mock_composition
+--------------------------------
+
+Input of :ref:`makeknownoccurrences <makeknownoccurrences_reference>`. TSV file with the list of amplicon sequences expected in the mock samples.
+
+    - marker: Name of the marker
+    - run: Name of the sequencing run
+    - sample: Name of the sample
+    - action: Flag to specify how to handle the occurrence (keep, tolerate or delete)
+    - sequence: Sequence of the variant
+
+.. _sample_types_io:
+
+sample_types
+--------------------------------
+
+Input of :ref:`makeknownoccurrences <makeknownoccurrences_reference>`. TSV file with the list of all samples used in the analysis.
+
+    - run: Name of the sequencing run
+    - sample: Name of the sample
+    - sample_type: Type of the sample (real, mock, or negative)
+    - habitat: Name of the habitat the sample belongs to
+
+.. _missing_occurrences_io:
+
+missing_occurrences
+---------------------------------
+
+Potential output of :ref:`makeknownoccurrences <makeknownoccurrences_reference>`. TSV file with the list of all occurences listed in :ref:`mock_composition_io` but missing from :ref:`asvtable_io`.
+
+    - run: Name of the sequencing run
+    - marker: Name of the marker (e.g. MFZR) 
+    - sample: Name of the sample
+    - sequence: Sequence of the variant
+    - tax_name: optional, not used by optimize
+
 .. _known_occurrences_io:
 
 :ref:`known_occurrences <optimize_reference>`
 ----------------------------------------------------------------
 
-Input of :ref:`filter <filter_reference>` and :ref:`optimize <optimize_reference>`. TSV file with expected occurrences (keep) and known false positives (delete). 
+Output of :ref:`makeknownoccurrences <makeknownoccurrences_reference>`, input of :ref:`filter <filter_reference>` and :ref:`optimize <optimize_reference>`. TSV file with expected occurrences (keep) and known false positives (delete). 
 
-    - Marker: Name of the marker (e.g. MFZR) 
-    - Run: Name of the sequencing run
-    - Sample: Name of the sample
-    - Mock: 1 if sample is a mock, 0 otherwise
-    - Variant: Varinat ID (can be empty)
-    - Action: keep (occurrences that should be kept after filtering) or delete (clear false positives)
-    - Sequence: Sequence of the variant
-    - Tax_name: optional, not used by optimize
+    - marker: Name of the marker (e.g. MFZR) 
+    - run: Name of the sequencing run
+    - sample: Name of the sample
+    - mock: 1 if sample is a mock, 0 otherwise
+    - variant: Varinat ID (can be empty)
+    - action: keep (occurrences that should be kept after filtering) or delete (clear false positives)
+    - sequence: Sequence of the variant
+    - tax_name: optional, not used by optimize
 
 .. _optimize_lfn_sample_replicate_io:
 
