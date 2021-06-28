@@ -65,6 +65,10 @@ There are two additional commands to prepare data for the vtam taxassign subcomm
     - :ref:`vtam taxonomy <taxonomy_reference>`: Creates a taxonomic TSV file
     - :ref:`vtam vtam coi_blast_db <BLAST_database_reference>`: Downloads a precomputed custom BLAST database for the cytochrome C oxidase subunit I (COI) marker gene
 
+There is also a command to prepare data for the optimize subcommand:
+
+    - :ref:`vtam makeknownoccurrences <makeknownoccurrences_reference>`: Finds all :ref:`keep <keep_glossary>` and :ref:`delete <delete_glossary>` occurrences and produce known_occurrenes.tsv file, which will be used in the optimize subcommand
+
 Finally there is a last command to help the user start quickly with the tool:
 
     - :ref:`vtam example <example_installation>`: Generates an example dataset for immediate use with VTAM
@@ -74,12 +78,15 @@ Although the pipeline can vary in function of the input data format and the expe
     - sortreads
     - filter (with default, low stringency filtering parameters)
     - taxassign
+    - makeknownoccurrences
     - optimize
     - filter (with optimized parameters)
     - pool
     - taxassign
 
-The command vtam filter should be run twice. First, with default, low stringency filtering parameters. This produces an :ref:`ASVtable_glossary` that is still likely to contain some :ref:`occurrences <occurrence_glossary>` which should be filtered out. Users should identify from this table clearly unexpected occurrences (variants present in negative controls, unexpected variants in mock samples, variants appearing in a sample of incompatible habitat) and expected occurrences in mock samples. Based on these occurrences, **vtam optimize** will suggest the most suitable parameters that keep all expected occurrences but eliminate most unexpected ones. Then, the command **vtam filter** should be run again, with the optimized parameters.
+The command vtam filter should be run twice. First, with default, low stringency filtering parameters. This produces an :ref:`ASVtable_glossary` that is still likely to contain some :ref:`occurrences <occurrence_glossary>` which should be filtered out. Users should identify from this table clearly unexpected occurrences (variants present in negative controls, unexpected variants in mock samples, variants appearing in a sample of incompatible habitat) and expected occurrences in mock samples. The command **vtam makeknownoccurrences** can typically be use to get a default list of those occurrences. Based on these occurrences, **vtam optimize** will suggest the most suitable parameters that keep all expected occurrences but eliminate most unexpected ones. Then, the command **vtam filter** should be run again, with the optimized parameters.
+
+**vtam makeknownoccurrences** also genrate a list of the occurrences expected in mock samples but missing from the :ref:`ASVtable_glossary`.
 
 **vtam taxassign** has a double role: It will assign ASVs in an input TSV file to taxa, and complete the input TSV file with taxonomic information. The lineages of ASV are stored in a sqlite database to avoid re-running the assignment several times for the same sequence. Therefore running vtam taxassign the second or third time (*e.g.* after the **vtam filter** with optimized parameters or after **vtam pool**) will be very quick and its main role will be to complete the input ASV table with taxonomic information.
 
