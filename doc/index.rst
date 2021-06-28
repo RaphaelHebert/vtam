@@ -37,6 +37,7 @@ Commands for a quick installation:
 .. code-block:: bash
 
     conda create --name vtam python=3.7 -y
+    conda activate vtam
     python3 -m pip install --upgrade cutadapt
     conda install -c bioconda blast
     conda install -c bioconda vsearch
