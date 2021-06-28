@@ -223,20 +223,22 @@ class ArgParser:
 
         cls.add_parser_coiblastdb(subparsers=subparsers)
 
+        cls.add_parser_makeknownoccurrences(subparsers=subparsers)
+
         return parser_vtam_main
 
     @classmethod
     def add_parser_example(cls, subparsers):
-        parser_vtam_merge = subparsers.add_parser('example', add_help=True,
+        parser_vtam_example = subparsers.add_parser('example', add_help=True,
                                                   parents=[cls.parser_params, cls.parser_log,
                                                            cls.parser_threads, cls.parser_verbosity],
                                                   help="generates data for quick start")
 
-        parser_vtam_merge.add_argument('--outdir', action='store',
+        parser_vtam_example.add_argument('--outdir', action='store',
                                        help="directory for quick start data",
                                        required=False, default='example', type=lambda x: pathlib.Path(x).mkdir(exist_ok=True, parents=True) or x)
 
-        parser_vtam_merge.set_defaults(command='example')
+        parser_vtam_example.set_defaults(command='example')
 
     @classmethod
     def add_parser_merge(cls, subparsers):
@@ -364,7 +366,7 @@ class ArgParser:
             action='store',
             default=None,
             help="""execute '%(prog)s' UNTIL one rule, where the rule order looks like:            
-1. SampleInformation, 2. VariantReadCount, 3. FilterLFN, 4. FilterMinReplicateNumber, 5. FilterPCRerror, 6. FilterChimera, 7. FilterMinReplicateNumber2, 8. FilterRenkonen, 9. FilterMinReplicateNumber3, 10. FilterIndel, 11. FilterCodonStop, 12. ReadCountAverageOverReplicates, 13. MakeAsvTable""",
+                1. SampleInformation, 2. VariantReadCount, 3. FilterLFN, 4. FilterMinReplicateNumber, 5. FilterPCRerror, 6. FilterChimera, 7. FilterMinReplicateNumber2, 8. FilterRenkonen, 9. FilterMinReplicateNumber3, 10. FilterIndel, 11. FilterCodonStop, 12. ReadCountAverageOverReplicates, 13. MakeAsvTable""",
             required=False)
 
         parser_vtam_filter.add_argument(
@@ -591,3 +593,51 @@ class ArgParser:
         )
         # This attribute will trigger the good command
         parser_vtam_coi_blast_db.set_defaults(command='coi_blast_db')
+
+    @classmethod
+    def add_parser_makeknownoccurrences(cls, subparsers):
+        parser_vtam_makeknownoccurrences = subparsers.add_parser(
+            'makeknownoccurrences', add_help=True,
+            help="generate default known_occurences tsv file required for the optimization along with a list of missing_occurences")
+        parser_vtam_makeknownoccurrences.add_argument(
+            '--asvtable',
+            dest='asvTable',
+            action='store',
+            help="input TSV file with variant sequences",
+            required=True)
+        parser_vtam_makeknownoccurrences.add_argument(
+            '--sample_types',
+            dest='sampleTypes',
+            action='store',
+            help="input TSV file listing all samples with associated type and habitat",
+            required=True)
+        parser_vtam_makeknownoccurrences.add_argument(
+            '--mock_composition',
+            dest='mockComposition',
+            action='store',
+            help="input TSV file listing expected sequences for all mock samples",
+            required=True)
+        parser_vtam_makeknownoccurrences.add_argument(
+            '--known_occurrences',
+            dest='known_occurrences',
+            action='store',
+            help="output TSV file with known variants and assigned action for optimization",
+            required=False,
+            default='./known_occurrences.tsv')
+        parser_vtam_makeknownoccurrences.add_argument(
+            '--missing_occurrences',
+            dest='missing_occurrences',
+            action='store',
+            help="output TSV file with list of variants expected from mock composition but missing from asvTable",
+            required=False,
+            default='./missing_occurrences.tsv')
+        parser_vtam_makeknownoccurrences.add_argument(
+            '--habitat_proportion',
+            dest='habitat_proportion',
+            action='store',
+            help="threshold ratio use for variant exclusion based on habitat distribution",
+            type=float,
+            required=False,
+            default=0.5)
+        # This attribute will trigger the good command
+        parser_vtam_makeknownoccurrences.set_defaults(command='makeknownoccurrences')
