@@ -9,6 +9,8 @@ import sqlalchemy
 import subprocess
 import unittest
 
+from vtam.utils.Taxonomy import Taxonomy
+
 from vtam.utils import pip_install_vtam_for_tests
 from vtam.utils.PathManager import PathManager
 from wopmars.Base import Base
@@ -51,6 +53,7 @@ class TestCommandTaxAssign(unittest.TestCase):
 
         cmd = "vtam coi_blast_db --blastdbdir {coi_blast_db_dir} --blastdbname coi_blast_db_20200420 ".format(**cls.args)
 
+        # if not (os.path.isfile(os.path.join(cls.args['coi_blast_db_dir'], "coi_blast_db_20200420.nhr"))):
         if sys.platform.startswith("win"):
             args = cmd
         else:
@@ -74,11 +77,11 @@ class TestCommandTaxAssign(unittest.TestCase):
 
         Base.metadata.create_all(self.engine)
 
-        self.asvtable = os.path.join(self.test_path, "test_files_dryad.f40v5_small/run1_mfzr_zfzr/asvtable_default.tsv")
+        self.asvtable = os.path.join(self.test_path, "test_files_dryad.f40v5_small", "run1_mfzr_zfzr", "asvtable_default.tsv")
         self.args['asvtable'] = self.asvtable
         self.asvtable_taxa = os.path.join(self.outdir_path, "asvtable_default_taxa.tsv")
         self.args['asvtable_taxa'] = self.asvtable_taxa
-        self.asvtable_taxa_bak = os.path.join(self.test_path, "test_files_dryad.f40v5_small/run1_mfzr_zfzr/asvtable_default_taxa.tsv")
+        self.asvtable_taxa_bak = os.path.join(self.test_path, "test_files_dryad.f40v5_small", "run1_mfzr_zfzr", "asvtable_default_taxa.tsv")
 
     def test_01_command_taxonomy(self):
 
@@ -95,12 +98,6 @@ class TestCommandTaxAssign(unittest.TestCase):
 
     def test_03_taxassign(self):
 
-        ############################################################################################
-        #
-        # COI Blast DB
-        #
-        ############################################################################################
-
         cmd = "vtam taxassign --asvtable {asvtable} --output {asvtable_taxa} --db {db} --blastdbdir {coi_blast_db_dir} --blastdbname coi_blast_db_20200420 --taxonomy {taxonomy}".format(**self.args)
 
         if sys.platform.startswith("win"):
@@ -110,6 +107,12 @@ class TestCommandTaxAssign(unittest.TestCase):
         subprocess.run(args=args, check=True)
 
         self.assertTrue(filecmp.cmp(self.asvtable_taxa, self.asvtable_taxa_bak, shallow=True))
+
+    def test_04_taxonomy_wrong_tax_id(self):
+
+        taxonomy = Taxonomy(tsv=self.args['taxonomy'])
+        wrong_tax_id=99999999
+        taxonomy.get_one_tax_id_lineage(wrong_tax_id)
 
     @classmethod
     def tearDownClass(cls):
