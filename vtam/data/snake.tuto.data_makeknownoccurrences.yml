@@ -47,7 +47,7 @@ rule all_one_marker_makeknownoccurrences:
         mock_composition=expand("{PROJECT}/user_input/mock_composition_{MARKER}.tsv", MARKER=MARKER, PROJECT=PROJECT),
         pool_run_marker=expand("{PROJECT}/user_input/pool_run_marker.tsv", PROJECT=PROJECT),
         params=expand("{PROJECT}/user_input/params_{MARKER}.yml", MARKER=MARKER, PROJECT=PROJECT),
-        snakeconfig=expand("{PROJECT}/user_input/snakeconfig_{MARKER}.yml", MARKER=MARKER, PROJECT=PROJECT),
+        snakeconfig=expand("{PROJECT}/user_input/snakeconfig_{MARKER}_makeknownoccurrences.yml", MARKER=MARKER, PROJECT=PROJECT),
         snakefile="snakefile_makeknownoccurrences.yml",
 
 rule all_one_marker:
@@ -67,7 +67,7 @@ rule all_one_marker:
         known_occurrences=expand("{PROJECT}/user_input/known_occurrences_{MARKER}.tsv", MARKER=MARKER, PROJECT=PROJECT),
         pool_run_marker=expand("{PROJECT}/user_input/pool_run_marker.tsv", PROJECT=PROJECT),
         params=expand("{PROJECT}/user_input/params_{MARKER}.yml", MARKER=MARKER, PROJECT=PROJECT),
-        snakeconfig=expand("{PROJECT}/user_input/snakeconfig_{MARKER}.yml", MARKER=MARKER, PROJECT=PROJECT),
+        snakeconfig=expand("{PROJECT}/user_input/snakeconfig_{MARKER}_makeknownoccurrences.yml", MARKER=MARKER, PROJECT=PROJECT),
         snakefile="snakefile_makeknownoccurrences.yml",
 
 rule snakefile:
@@ -122,11 +122,11 @@ rule user_input_one_marker:
     input:
         fastqinfo=os.path.join(PACKAGE_PATH, 'data/example', 'fastqinfo_{MARKER}.tsv'),
         mock_composition=os.path.join(PACKAGE_PATH, 'data/example', 'mock_composition_{MARKER}.tsv'),
-        snakeconfig=os.path.join(PACKAGE_PATH, 'data/example', 'snakeconfig_{MARKER}.yml'),
+        snakeconfig=os.path.join(PACKAGE_PATH, 'data/example', 'snakeconfig_{MARKER}_makeknownoccurrences.yml'),
     output:
         fastqinfo="{PROJECT}/user_input/fastqinfo_{MARKER}.tsv",
         mock_composition="{PROJECT}/user_input/mock_composition_{MARKER}.tsv",
-        snakeconfig="{PROJECT}/user_input/snakeconfig_{MARKER}.yml",
+        snakeconfig="{PROJECT}/user_input/snakeconfig_{MARKER}_makeknownoccurrences.yml",
     shell:
         """rsync -avt {input.fastqinfo} {output.fastqinfo}
 rsync -avt {input.mock_composition} {output.mock_composition}

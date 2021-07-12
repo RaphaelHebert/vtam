@@ -26,7 +26,7 @@ rule optimize:
 
 rule makeknownoccurrences:
     input:
-        expand("{outdir}/known_occurrences2_mfzr.tsv"),
+        expand("{outdir}/known_occurrences.tsv", outdir=outdir),
 
 rule asvtable_taxa:
     input:
@@ -61,10 +61,11 @@ rule makeknownoccurrences_tmp:
         sample_types=sample_types,
         mock_composition=mock_composition,
     output:
-        known_occurrences="{outdir}/known_occurrences2_mfzr.tsv",
+        known_occurrences="{outdir}/known_occurrences.tsv",
+    params:
         missing_occurrences="{outdir}/missing_occurrences.tsv",
     shell:
-        "vtam makeknownoccurrences --asvtable  {input.asvtable} --sample_types {input.sample_types} --mock_composition {input.mock_composition} --known_occurrences {output.known_occurrences} --missing_occurrences {output.missing_occurrences} "
+        "vtam makeknownoccurrences --asvtable  {input.asvtable} --sample_types {input.sample_types} --mock_composition {input.mock_composition} --known_occurrences {output.known_occurrences} --missing_occurrences {params.missing_occurrences} "
 
 rule asvtable_taxa_tmp:
     input:
