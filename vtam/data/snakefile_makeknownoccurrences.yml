@@ -2,7 +2,7 @@ project = config['project']
 subproject = config['subproject']
 fastqinfo = config['fastqinfo']
 fastqdir = config['fastqdir']
-known_occurrences = config['known_occurrences']
+#known_occurrences = config['known_occurrences']
 sample_types = config['sample_types']
 mock_composition = config['mock_composition']
 if 'params' in config:
