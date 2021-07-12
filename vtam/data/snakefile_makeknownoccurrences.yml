@@ -40,7 +40,8 @@ rule optimize_tmp:
     input:
         asvtable="{outdir}/asvtable_default_taxa.tsv",
         sortedinfo="{outdir}/sorted/sortedinfo.tsv",
-        known_occurrences=known_occurrences,
+        #known_occurrences=known_occurrences,
+        known_occurrences="{outdir}/known_occurrences.tsv",
     output:
         optimize_lfn_sample_replicate="{outdir}/optimize_lfn_sample_replicate.tsv",
         optimize_lfn_read_count_and_lfn_variant="{outdir}/optimize_lfn_read_count_and_lfn_variant.tsv",

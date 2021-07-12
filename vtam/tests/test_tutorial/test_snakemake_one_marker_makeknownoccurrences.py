@@ -100,26 +100,6 @@ class TestTutorialSnakemakeOneMarker(unittest.TestCase):
             args = shlex.split(cmd)
         subprocess.run(args=args, check=True, cwd=cls.outdir_path)
 
-        # cmd = "snakemake --cores 1 -s {snake_tuto_data} --config MARKER=zfzr " \
-        #           "PROJECT=asper1 PACKAGE_PATH={package_path} --until all_one_marker_makeknownoccurrences".format(**cls.args)
-        #
-        # if sys.platform.startswith("win"):
-        #     args = cmd
-        # else:
-        #     args = shlex.split(cmd)
-        # subprocess.run(args=args, check=True, cwd=cls.outdir_path)
-
-    def test_01_mfzr_filter(self):
-
-        snakeconfig = os.path.join("asper1", "user_input", "snakeconfig_mfzr_makeknownoccurrences.yml")
-        cmd = "snakemake --printshellcmds --resources db=1 --snakefile snakefile_makeknownoccurrences.yml --cores 4 --configfile {} --until asvtable_taxa".format(snakeconfig)
-
-        if sys.platform.startswith("win"):
-            args = cmd
-        else:
-            args = shlex.split(cmd)
-        subprocess.run(args=args, check=True, cwd=self.outdir_path)
-
     def test_01_mfzr_makeknownoccurrences(self):
 
         snakeconfig = os.path.join("asper1", "user_input", "snakeconfig_mfzr_makeknownoccurrences.yml")
@@ -135,21 +115,10 @@ class TestTutorialSnakemakeOneMarker(unittest.TestCase):
         known_occurrences_mfzr_bak = os.path.join(self.test_path, "test_files", "known_occurrences_mfzr.tsv")
         self.assertTrue(filecmp.cmp(known_occurrences_mfzr, known_occurrences_mfzr_bak, shallow=True))
 
-    def test_02_mfzr_optimize(self):
+    def test_02_mfzr_makeknownoccurrences_optimize(self):
 
         snakeconfig = os.path.join("asper1", "user_input", "snakeconfig_mfzr_makeknownoccurrences.yml")
         cmd = "snakemake --printshellcmds --resources db=1 --snakefile snakefile_makeknownoccurrences.yml --cores 4 --configfile {} --until optimize".format(snakeconfig)
-
-        if sys.platform.startswith("win"):
-            args = cmd
-        else:
-            args = shlex.split(cmd)
-        subprocess.run(args=args, check=True, cwd=self.outdir_path)
-
-    def test_03_mfzr_filter_optimized(self):
-
-        snakeconfig = os.path.join("asper1", "user_input", "snakeconfig_mfzr_makeknownoccurrences.yml")
-        cmd = "snakemake --printshellcmds --resources db=1 --snakefile snakefile_makeknownoccurrences.yml --cores 4 --configfile {} --until asvtable_optimized_taxa".format(snakeconfig)
 
         if sys.platform.startswith("win"):
             args = cmd
